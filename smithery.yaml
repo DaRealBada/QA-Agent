@@ -1,0 +1,11 @@
+# Smithery configuration file: https://smithery.ai/docs/build/project-config
+
+build:
+  dockerBuildPath: context7-f2f367d8913843bd28b2a96a6ce860f43e3fc3ca
+startCommand:
+  type: http
+  configSchema:
+    # JSON Schema defining the configuration options for the MCP.
+    type: object
+    description: No configuration required
+  exampleConfig: {}
