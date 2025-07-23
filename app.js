@@ -2,7 +2,7 @@ const express = require('express');
 const bodyParser = require('body-parser');
 const { exec } = require('child_process'); // For running shell commands
 const app = express();
-const port = 3000;
+const port = 8080;
 
 app.use(bodyParser.json());
 
