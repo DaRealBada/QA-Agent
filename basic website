@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>My Website</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            line-height: 1.6;
+            color: #333;
+        }
+        
+        header {
+            background-color: #4CAF50;
+            color: white;
+            text-align: center;
+            padding: 1rem;
+        }
+        
+        nav {
+            background-color: #333;
+            padding: 1rem;
+        }
+        
+        nav ul {
+            list-style-type: none;
+            margin: 0;
+            padding: 0;
+        }
+        
+        nav ul li {
+            display: inline;
+            margin-right: 20px;
+        }
+        
+        nav ul li a {
+            color: white;
+            text-decoration: none;
+        }
+        
+        nav ul li a:hover {
+            text-decoration: underline;
+        }
+        
+        main {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        
+        section {
+            margin-bottom: 30px;
+        }
+        
+        footer {
+            background-color: #333;
+            color: white;
+            text-align: center;
+            padding: 1rem;
+            position: relative;
+            bottom: 0;
+            width: 100%;
+        }
+        
+        .highlight {
+            background-color: #f4f4f4;
+            padding: 15px;
+            border-radius: 5px;
+            margin: 10px 0;
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <h1>Welcome to My Website</h1>
+        <p>A simple HTML website template</p>
+    </header>
+    
+    <nav>
+        <ul>
+            <li><a href="#home">Home</a></li>
+            <li><a href="#about">About</a></li>
+            <li><a href="#services">Services</a></li>
+            <li><a href="#contact">Contact</a></li>
+        </ul>
+    </nav>
+    
+    <main>
+        <section id="home">
+            <h2>Home</h2>
+            <p>This is the home section of the website. You can add your main content here.</p>
+            <div class="highlight">
+                <h3>Featured Content</h3>
+                <p>This is a highlighted section that draws attention to important information.</p>
+            </div>
+        </section>
+        
+        <section id="about">
+            <h2>About Us</h2>
+            <p>Tell visitors about yourself, your company, or your project. This section can include:</p>
+            <ul>
+                <li>Your mission and values</li>
+                <li>Company history</li>
+                <li>Team information</li>
+                <li>What makes you unique</li>
+            </ul>
+        </section>
+        
+        <section id="services">
+            <h2>Our Services</h2>
+            <p>List the services or products you offer:</p>
+            <div class="highlight">
+                <h4>Service 1</h4>
+                <p>Description of your first service or product.</p>
+            </div>
+            <div class="highlight">
+                <h4>Service 2</h4>
+                <p>Description of your second service or product.</p>
+            </div>
+        </section>
+        
+        <section id="contact">
+            <h2>Contact Us</h2>
+            <p>Get in touch with us:</p>
+            <p><strong>Email:</strong> contact@example.com</p>
+            <p><strong>Phone:</strong> (555) 123-4567</p>
+            <p><strong>Address:</strong> 123 Main Street, City, State 12345</p>
+            
+            <form>
+                <p>
+                    <label for="name">Name:</label><br>
+                    <input type="text" id="name" name="name" style="width: 300px; padding: 5px;">
+                </p>
+                <p>
+                    <label for="email">Email:</label><br>
+                    <input type="email" id="email" name="email" style="width: 300px; padding: 5px;">
+                </p>
+                <p>
+                    <label for="message">Message:</label><br>
+                    <textarea id="message" name="message" rows="4" style="width: 300px; padding: 5px;"></textarea>
+                </p>
+                <p>
+                    <input type="submit" value="Send Message" style="padding: 10px 20px; background-color: #4CAF50; color: white; border: none; cursor: pointer;">
+                </p>
+            </form>
+        </section>
+    </main>
+    
+    <footer>
+        <p>&copy; 2025 My Website. All rights reserved.</p>
+    </footer>
+</body>
+</html>
