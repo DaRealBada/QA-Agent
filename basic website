@@ -55,14 +55,6 @@
             margin-bottom: 30px;
         }
         
-
-        
-        .highlight {
-            background-color: #f4f4f4;
-            padding: 15px;
-            border-radius: 5px;
-            margin: 10px 0;
-        }
     </style>
 </head>
 <body>
