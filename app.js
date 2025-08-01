@@ -5,6 +5,7 @@ const app = express();
 const port = 8080;
 
 app.use(bodyParser.json());
+app.use(bodyParser.json());
 
 app.post('/create-task', (req, res) => {
   const prTitle = req.body.pr_title;
