@@ -6,6 +6,10 @@ const port = 8080;
 
 app.use(bodyParser.json());
 
+const port = 8080;
+
+app.use(bodyParser.json());
+
 app.post('/create-task', (req, res) => {
   const prTitle = req.body.pr_title;
   const prUrl = req.body.pr_url;
@@ -27,6 +31,8 @@ app.post('/create-task', (req, res) => {
   // Placeholder: Using 'task-master-ai init' for now as that's what we know runs.
   // You MUST replace this with the actual task creation logic!
   const taskCommand = `./node_modules/.bin/task-master-ai init`;
+  const taskCommand = `./node_modules/.bin/task-master-ai init`;
+
   console.log('Attempting to call task-master-ai with command:', taskCommand);
 
   exec(taskCommand, (error, stdout, stderr) => {
