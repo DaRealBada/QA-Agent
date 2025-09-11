@@ -1,0 +1,1023 @@
+{
+  "name": "Single Repo Workflow",
+  "nodes": [
+    {
+      "parameters": {
+        "owner": {
+          "__rl": true,
+          "value": "DaRealBada",
+          "mode": "list",
+          "cachedResultName": "DaRealBada",
+          "cachedResultUrl": "https://github.com/DaRealBada"
+        },
+        "repository": {
+          "__rl": true,
+          "value": "Web-Prog-CW",
+          "mode": "list",
+          "cachedResultName": "Web-Prog-CW",
+          "cachedResultUrl": "https://github.com/DaRealBada/Web-Prog-CW"
+        },
+        "events": [
+          "pull_request"
+        ],
+        "options": {
+          "insecureSSL": false
+        }
+      },
+      "type": "n8n-nodes-base.githubTrigger",
+      "typeVersion": 1,
+      "position": [
+        0,
+        0
+      ],
+      "id": "8981f8d7-5521-4792-a9b3-536969ac4fb8",
+      "name": "Github Trigger1",
+      "webhookId": "cc134d87-23ba-4f08-9da0-64f5dcb01fc8",
+      "credentials": {
+        "githubApi": {
+          "id": "e0n1CmbM645qMlWS",
+          "name": "GitHub account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "url": "https://api.github.com/repos/DaRealBada/Web-Prog-CW/contents",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        240,
+        192
+      ],
+      "id": "dc09d997-7999-41b1-8830-d30bd823d9aa",
+      "name": "Get a repository1"
+    },
+    {
+      "parameters": {
+        "url": "={{ $json.download_url }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        912,
+        192
+      ],
+      "id": "e0491a17-e9e3-4cc0-bb3f-4e377c8e6a7d",
+      "name": "HTTP Request3",
+      "retryOnFail": false,
+      "executeOnce": false
+    },
+    {
+      "parameters": {
+        "jsCode": "const filteredItems = items.filter(item => {\n  const fileName = item.json.name.toLowerCase();\n  return fileName.endsWith('.html') || fileName.endsWith('.css') || fileName.endsWith('.php') || fileName.endsWith('.js');\n});\n\nreturn filteredItems;"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        464,
+        192
+      ],
+      "id": "dd98df25-b9cc-4ea7-bf3e-fb0ea02edcbc",
+      "name": "Code"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "b9d6ea18-ac71-4ae3-b7db-4c6257868978",
+              "name": "download_url",
+              "value": "={{ $json.download_url }}",
+              "type": "string"
+            },
+            {
+              "id": "172c731d-6be9-4665-8c3b-f2b109dd5f4f",
+              "name": "name",
+              "value": "={{ $json.name }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        688,
+        192
+      ],
+      "id": "8f634964-fcf6-40c2-9f10-40f8caa27d9b",
+      "name": "Edit Fields1"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=You are an expert QA Strategist AI. Your task is to analyze GitHub repository data and generate a comprehensive context document. This document should serve as a detailed overview of the application's functionality and structure.\n\nRepository URL: `{{ $('HTTP Request').item.json.data }}`\nFull Repository Data: `{{ JSON.stringify($('Get a repository1').all()) }}`\nDiff/Changes Data: `{{ JSON.stringify($('Merge').item.json) }}`\n\n**IMPORTANT**: You have been provided with both full repository data AND specific diff/change data. You **MUST** analyze and use **BOTH** data sources.\n\n---\n\n### ## Your Detailed Process\n\n1.  **Thoroughly analyze** the full repository data to understand the complete application structure, user flow, and functionality.\n2.  **Analyze the diff/changes** data to understand the specific modifications that were made.\n3.  **Generate a single analysis document** that describes the repository's components. Your output **MUST** be a plain text string with no preamble.\n\n---\n\n### ## 📝 Directive for the Context Document\n\nThe final output of your analysis is critical because it will be used by an external service (Taskmaster-AI) to generate a user-level test plan. Therefore, your context document **MUST** adhere to the following guidelines:\n\n* **Translate Technical Changes**: When describing changes from the diff data, you **MUST** translate technical details into simple, visual descriptions of the user experience.\n    * **Bad Example**: \"The CSS for `.h1` was updated to `font-size: 36px` and `color: blue`.\"\n    * **Good Example**: \"On the main page, the primary heading text was changed. It now appears much larger and is colored blue.\"\n* **Focus on User-Facing Impact**: Your analysis should focus on what a user **does** and **sees**. Describe the purpose of forms, buttons, and pages from the perspective of someone using the website, not building it.\n* **Emphasize Simplicity**: The goal is a test plan simple enough for a 12-year-old. Ensure your context document provides the necessary user-centric details for Taskmaster-AI to create such a plan. Avoid all technical jargon (like pixels, CSS classes, hex codes, etc.) in your final descriptions of changes.\n\n### ## ✅ Examples of Final Test Steps\n\nThese examples show the simple, non-technical style that the final test plan in the Google Sheet should have. Your context document must provide the right details for Taskmaster-AI to generate steps like these.\n\n* **Successful Login**\n    1.  Open the web app.\n    2.  Enter a valid email address into the Email field.\n    3.  Enter a valid password into the Password field.\n    4.  Click the 'Login' button.\n    5.  Verify the user is redirected to the Platform.\n\n* **Add a New Organization**\n    1.  Click the '+Organization' button.\n    2.  Enter a valid name into the Organization name field.\n    3.  Enter a valid Zip Code.\n    4.  Click the 'Save' button.\n    5.  Verify the Organization is added to the list.\n\n* **Delete an Organization**\n    1.  Click the action icon near an Organization.\n    2.  Click the 'Delete' button.\n    3.  Click the 'Delete' button again to confirm.\n    4.  Verify the organization is deleted from the list.",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 2.1,
+      "position": [
+        1360,
+        16
+      ],
+      "id": "3f9ff305-8ee8-4dfd-b7cb-0414316a6a50",
+      "name": "AI Agent2",
+      "executeOnce": true
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://taskmaster-bridge-service-415854547935.us-central1.run.app/create-task-direct",
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "output",
+              "value": "={{ $json.output }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        1712,
+        16
+      ],
+      "id": "3129469c-c9a8-4c76-9f10-5d2741c86dc5",
+      "name": "HTTP Request4"
+    },
+    {
+      "parameters": {
+        "operation": "append",
+        "documentId": {
+          "__rl": true,
+          "value": "12CfBlT4gSdnqBcbIEybZE9gghSqnBwVN9u-hQs2Au3A",
+          "mode": "list",
+          "cachedResultName": "QA Agent n8n",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/12CfBlT4gSdnqBcbIEybZE9gghSqnBwVN9u-hQs2Au3A/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": 1576753120,
+          "mode": "list",
+          "cachedResultName": "Sheet2",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/12CfBlT4gSdnqBcbIEybZE9gghSqnBwVN9u-hQs2Au3A/edit#gid=1576753120"
+        },
+        "columns": {
+          "mappingMode": "autoMapInputData",
+          "value": {},
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "component",
+              "displayName": "component",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "verification",
+              "displayName": "verification",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "preconditions",
+              "displayName": "preconditions",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "expected_result",
+              "displayName": "expected_result",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "test_steps",
+              "displayName": "test_steps",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.6,
+      "position": [
+        2384,
+        16
+      ],
+      "id": "a2d2f155-4186-42ee-8c5e-0915265c76ad",
+      "name": "Append row in sheet2",
+      "executeOnce": false,
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "eK0H021weMITA8m7",
+          "name": "Google Sheets account 2"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
+      "typeVersion": 1,
+      "position": [
+        1360,
+        208
+      ],
+      "id": "d8db9f5e-9617-41a4-a1db-21b3def14b4c",
+      "name": "Google Gemini Chat Model2",
+      "credentials": {
+        "googlePalmApi": {
+          "id": "Xcz4RRGeiEAKkrRo",
+          "name": "Google Gemini(PaLM) Api account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "fieldToSplitOut": "tasks",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.splitOut",
+      "typeVersion": 1,
+      "position": [
+        1936,
+        16
+      ],
+      "id": "97b77d6f-0fd7-4fee-acbb-b2045bb80a68",
+      "name": "Split Out4"
+    },
+    {
+      "parameters": {
+        "fieldToSplitOut": "component, verification, preconditions, expected_result, test_steps",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.splitOut",
+      "typeVersion": 1,
+      "position": [
+        2160,
+        16
+      ],
+      "id": "34fc284d-3e38-4274-85cc-3eda2e3909f3",
+      "name": "Split Out5"
+    },
+    {
+      "parameters": {
+        "url": "={{ $json.body.pull_request.diff_url }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        464,
+        0
+      ],
+      "id": "5fe2e3e2-d8de-43e8-988e-967d640bed5a",
+      "name": "HTTP Request"
+    },
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.merge",
+      "typeVersion": 3.2,
+      "position": [
+        1136,
+        16
+      ],
+      "id": "9b053a9e-1a06-4cdf-b23d-f6178362fc1a",
+      "name": "Merge"
+    }
+  ],
+  "pinData": {
+    "Github Trigger1": [
+      {
+        "json": {
+          "body": {
+            "action": "closed",
+            "number": 13,
+            "pull_request": {
+              "url": "https://api.github.com/repos/DaRealBada/Web-Prog-CW/pulls/13",
+              "id": 2743670004,
+              "node_id": "PR_kwDOL90mVc6jiRT0",
+              "html_url": "https://github.com/DaRealBada/Web-Prog-CW/pull/13",
+              "diff_url": "https://github.com/DaRealBada/Web-Prog-CW/pull/13.diff",
+              "patch_url": "https://github.com/DaRealBada/Web-Prog-CW/pull/13.patch",
+              "issue_url": "https://api.github.com/repos/DaRealBada/Web-Prog-CW/issues/13",
+              "number": 13,
+              "state": "closed",
+              "locked": false,
+              "title": "Update about.html",
+              "user": {
+                "login": "DaRealBada",
+                "id": 142679079,
+                "node_id": "U_kgDOCIEcJw",
+                "avatar_url": "https://avatars.githubusercontent.com/u/142679079?v=4",
+                "gravatar_id": "",
+                "url": "https://api.github.com/users/DaRealBada",
+                "html_url": "https://github.com/DaRealBada",
+                "followers_url": "https://api.github.com/users/DaRealBada/followers",
+                "following_url": "https://api.github.com/users/DaRealBada/following{/other_user}",
+                "gists_url": "https://api.github.com/users/DaRealBada/gists{/gist_id}",
+                "starred_url": "https://api.github.com/users/DaRealBada/starred{/owner}{/repo}",
+                "subscriptions_url": "https://api.github.com/users/DaRealBada/subscriptions",
+                "organizations_url": "https://api.github.com/users/DaRealBada/orgs",
+                "repos_url": "https://api.github.com/users/DaRealBada/repos",
+                "events_url": "https://api.github.com/users/DaRealBada/events{/privacy}",
+                "received_events_url": "https://api.github.com/users/DaRealBada/received_events",
+                "type": "User",
+                "user_view_type": "public",
+                "site_admin": false
+              },
+              "body": null,
+              "created_at": "2025-08-13T18:13:24Z",
+              "updated_at": "2025-08-14T22:43:17Z",
+              "closed_at": "2025-08-14T22:43:17Z",
+              "merged_at": "2025-08-14T22:43:17Z",
+              "merge_commit_sha": "9091db535e3097b0bba659141ee9bdf8a18cfea2",
+              "assignee": null,
+              "assignees": [],
+              "requested_reviewers": [],
+              "requested_teams": [],
+              "labels": [],
+              "milestone": null,
+              "draft": false,
+              "commits_url": "https://api.github.com/repos/DaRealBada/Web-Prog-CW/pulls/13/commits",
+              "review_comments_url": "https://api.github.com/repos/DaRealBada/Web-Prog-CW/pulls/13/comments",
+              "review_comment_url": "https://api.github.com/repos/DaRealBada/Web-Prog-CW/pulls/comments{/number}",
+              "comments_url": "https://api.github.com/repos/DaRealBada/Web-Prog-CW/issues/13/comments",
+              "statuses_url": "https://api.github.com/repos/DaRealBada/Web-Prog-CW/statuses/ad51c2d535f5acb597737b02d71e1b57323e06e4",
+              "head": {
+                "label": "DaRealBada:DaRealBada-patch-13",
+                "ref": "DaRealBada-patch-13",
+                "sha": "ad51c2d535f5acb597737b02d71e1b57323e06e4",
+                "user": {
+                  "login": "DaRealBada",
+                  "id": 142679079,
+                  "node_id": "U_kgDOCIEcJw",
+                  "avatar_url": "https://avatars.githubusercontent.com/u/142679079?v=4",
+                  "gravatar_id": "",
+                  "url": "https://api.github.com/users/DaRealBada",
+                  "html_url": "https://github.com/DaRealBada",
+                  "followers_url": "https://api.github.com/users/DaRealBada/followers",
+                  "following_url": "https://api.github.com/users/DaRealBada/following{/other_user}",
+                  "gists_url": "https://api.github.com/users/DaRealBada/gists{/gist_id}",
+                  "starred_url": "https://api.github.com/users/DaRealBada/starred{/owner}{/repo}",
+                  "subscriptions_url": "https://api.github.com/users/DaRealBada/subscriptions",
+                  "organizations_url": "https://api.github.com/users/DaRealBada/orgs",
+                  "repos_url": "https://api.github.com/users/DaRealBada/repos",
+                  "events_url": "https://api.github.com/users/DaRealBada/events{/privacy}",
+                  "received_events_url": "https://api.github.com/users/DaRealBada/received_events",
+                  "type": "User",
+                  "user_view_type": "public",
+                  "site_admin": false
+                },
+                "repo": {
+                  "id": 803022421,
+                  "node_id": "R_kgDOL90mVQ",
+                  "name": "Web-Prog-CW",
+                  "full_name": "DaRealBada/Web-Prog-CW",
+                  "private": false,
+                  "owner": {
+                    "login": "DaRealBada",
+                    "id": 142679079,
+                    "node_id": "U_kgDOCIEcJw",
+                    "avatar_url": "https://avatars.githubusercontent.com/u/142679079?v=4",
+                    "gravatar_id": "",
+                    "url": "https://api.github.com/users/DaRealBada",
+                    "html_url": "https://github.com/DaRealBada",
+                    "followers_url": "https://api.github.com/users/DaRealBada/followers",
+                    "following_url": "https://api.github.com/users/DaRealBada/following{/other_user}",
+                    "gists_url": "https://api.github.com/users/DaRealBada/gists{/gist_id}",
+                    "starred_url": "https://api.github.com/users/DaRealBada/starred{/owner}{/repo}",
+                    "subscriptions_url": "https://api.github.com/users/DaRealBada/subscriptions",
+                    "organizations_url": "https://api.github.com/users/DaRealBada/orgs",
+                    "repos_url": "https://api.github.com/users/DaRealBada/repos",
+                    "events_url": "https://api.github.com/users/DaRealBada/events{/privacy}",
+                    "received_events_url": "https://api.github.com/users/DaRealBada/received_events",
+                    "type": "User",
+                    "user_view_type": "public",
+                    "site_admin": false
+                  },
+                  "html_url": "https://github.com/DaRealBada/Web-Prog-CW",
+                  "description": "Wedding Service Company Website",
+                  "fork": false,
+                  "url": "https://api.github.com/repos/DaRealBada/Web-Prog-CW",
+                  "forks_url": "https://api.github.com/repos/DaRealBada/Web-Prog-CW/forks",
+                  "keys_url": "https://api.github.com/repos/DaRealBada/Web-Prog-CW/keys{/key_id}",
+                  "collaborators_url": "https://api.github.com/repos/DaRealBada/Web-Prog-CW/collaborators{/collaborator}",
+                  "teams_url": "https://api.github.com/repos/DaRealBada/Web-Prog-CW/teams",
+                  "hooks_url": "https://api.github.com/repos/DaRealBada/Web-Prog-CW/hooks",
+                  "issue_events_url": "https://api.github.com/repos/DaRealBada/Web-Prog-CW/issues/events{/number}",
+                  "events_url": "https://api.github.com/repos/DaRealBada/Web-Prog-CW/events",
+                  "assignees_url": "https://api.github.com/repos/DaRealBada/Web-Prog-CW/assignees{/user}",
+                  "branches_url": "https://api.github.com/repos/DaRealBada/Web-Prog-CW/branches{/branch}",
+                  "tags_url": "https://api.github.com/repos/DaRealBada/Web-Prog-CW/tags",
+                  "blobs_url": "https://api.github.com/repos/DaRealBada/Web-Prog-CW/git/blobs{/sha}",
+                  "git_tags_url": "https://api.github.com/repos/DaRealBada/Web-Prog-CW/git/tags{/sha}",
+                  "git_refs_url": "https://api.github.com/repos/DaRealBada/Web-Prog-CW/git/refs{/sha}",
+                  "trees_url": "https://api.github.com/repos/DaRealBada/Web-Prog-CW/git/trees{/sha}",
+                  "statuses_url": "https://api.github.com/repos/DaRealBada/Web-Prog-CW/statuses/{sha}",
+                  "languages_url": "https://api.github.com/repos/DaRealBada/Web-Prog-CW/languages",
+                  "stargazers_url": "https://api.github.com/repos/DaRealBada/Web-Prog-CW/stargazers",
+                  "contributors_url": "https://api.github.com/repos/DaRealBada/Web-Prog-CW/contributors",
+                  "subscribers_url": "https://api.github.com/repos/DaRealBada/Web-Prog-CW/subscribers",
+                  "subscription_url": "https://api.github.com/repos/DaRealBada/Web-Prog-CW/subscription",
+                  "commits_url": "https://api.github.com/repos/DaRealBada/Web-Prog-CW/commits{/sha}",
+                  "git_commits_url": "https://api.github.com/repos/DaRealBada/Web-Prog-CW/git/commits{/sha}",
+                  "comments_url": "https://api.github.com/repos/DaRealBada/Web-Prog-CW/comments{/number}",
+                  "issue_comment_url": "https://api.github.com/repos/DaRealBada/Web-Prog-CW/issues/comments{/number}",
+                  "contents_url": "https://api.github.com/repos/DaRealBada/Web-Prog-CW/contents/{+path}",
+                  "compare_url": "https://api.github.com/repos/DaRealBada/Web-Prog-CW/compare/{base}...{head}",
+                  "merges_url": "https://api.github.com/repos/DaRealBada/Web-Prog-CW/merges",
+                  "archive_url": "https://api.github.com/repos/DaRealBada/Web-Prog-CW/{archive_format}{/ref}",
+                  "downloads_url": "https://api.github.com/repos/DaRealBada/Web-Prog-CW/downloads",
+                  "issues_url": "https://api.github.com/repos/DaRealBada/Web-Prog-CW/issues{/number}",
+                  "pulls_url": "https://api.github.com/repos/DaRealBada/Web-Prog-CW/pulls{/number}",
+                  "milestones_url": "https://api.github.com/repos/DaRealBada/Web-Prog-CW/milestones{/number}",
+                  "notifications_url": "https://api.github.com/repos/DaRealBada/Web-Prog-CW/notifications{?since,all,participating}",
+                  "labels_url": "https://api.github.com/repos/DaRealBada/Web-Prog-CW/labels{/name}",
+                  "releases_url": "https://api.github.com/repos/DaRealBada/Web-Prog-CW/releases{/id}",
+                  "deployments_url": "https://api.github.com/repos/DaRealBada/Web-Prog-CW/deployments",
+                  "created_at": "2024-05-19T22:19:29Z",
+                  "updated_at": "2025-08-13T18:11:32Z",
+                  "pushed_at": "2025-08-13T18:13:21Z",
+                  "git_url": "git://github.com/DaRealBada/Web-Prog-CW.git",
+                  "ssh_url": "git@github.com:DaRealBada/Web-Prog-CW.git",
+                  "clone_url": "https://github.com/DaRealBada/Web-Prog-CW.git",
+                  "svn_url": "https://github.com/DaRealBada/Web-Prog-CW",
+                  "homepage": null,
+                  "size": 16181,
+                  "stargazers_count": 0,
+                  "watchers_count": 0,
+                  "language": "HTML",
+                  "has_issues": true,
+                  "has_projects": true,
+                  "has_downloads": true,
+                  "has_wiki": true,
+                  "has_pages": false,
+                  "has_discussions": false,
+                  "forks_count": 0,
+                  "mirror_url": null,
+                  "archived": false,
+                  "disabled": false,
+                  "open_issues_count": 0,
+                  "license": null,
+                  "allow_forking": true,
+                  "is_template": false,
+                  "web_commit_signoff_required": false,
+                  "topics": [],
+                  "visibility": "public",
+                  "forks": 0,
+                  "open_issues": 0,
+                  "watchers": 0,
+                  "default_branch": "main",
+                  "allow_squash_merge": true,
+                  "allow_merge_commit": true,
+                  "allow_rebase_merge": true,
+                  "allow_auto_merge": false,
+                  "delete_branch_on_merge": false,
+                  "allow_update_branch": false,
+                  "use_squash_pr_title_as_default": false,
+                  "squash_merge_commit_message": "COMMIT_MESSAGES",
+                  "squash_merge_commit_title": "COMMIT_OR_PR_TITLE",
+                  "merge_commit_message": "PR_TITLE",
+                  "merge_commit_title": "MERGE_MESSAGE"
+                }
+              },
+              "base": {
+                "label": "DaRealBada:main",
+                "ref": "main",
+                "sha": "84a3413801e70b1aec23b2b0903229514db7372b",
+                "user": {
+                  "login": "DaRealBada",
+                  "id": 142679079,
+                  "node_id": "U_kgDOCIEcJw",
+                  "avatar_url": "https://avatars.githubusercontent.com/u/142679079?v=4",
+                  "gravatar_id": "",
+                  "url": "https://api.github.com/users/DaRealBada",
+                  "html_url": "https://github.com/DaRealBada",
+                  "followers_url": "https://api.github.com/users/DaRealBada/followers",
+                  "following_url": "https://api.github.com/users/DaRealBada/following{/other_user}",
+                  "gists_url": "https://api.github.com/users/DaRealBada/gists{/gist_id}",
+                  "starred_url": "https://api.github.com/users/DaRealBada/starred{/owner}{/repo}",
+                  "subscriptions_url": "https://api.github.com/users/DaRealBada/subscriptions",
+                  "organizations_url": "https://api.github.com/users/DaRealBada/orgs",
+                  "repos_url": "https://api.github.com/users/DaRealBada/repos",
+                  "events_url": "https://api.github.com/users/DaRealBada/events{/privacy}",
+                  "received_events_url": "https://api.github.com/users/DaRealBada/received_events",
+                  "type": "User",
+                  "user_view_type": "public",
+                  "site_admin": false
+                },
+                "repo": {
+                  "id": 803022421,
+                  "node_id": "R_kgDOL90mVQ",
+                  "name": "Web-Prog-CW",
+                  "full_name": "DaRealBada/Web-Prog-CW",
+                  "private": false,
+                  "owner": {
+                    "login": "DaRealBada",
+                    "id": 142679079,
+                    "node_id": "U_kgDOCIEcJw",
+                    "avatar_url": "https://avatars.githubusercontent.com/u/142679079?v=4",
+                    "gravatar_id": "",
+                    "url": "https://api.github.com/users/DaRealBada",
+                    "html_url": "https://github.com/DaRealBada",
+                    "followers_url": "https://api.github.com/users/DaRealBada/followers",
+                    "following_url": "https://api.github.com/users/DaRealBada/following{/other_user}",
+                    "gists_url": "https://api.github.com/users/DaRealBada/gists{/gist_id}",
+                    "starred_url": "https://api.github.com/users/DaRealBada/starred{/owner}{/repo}",
+                    "subscriptions_url": "https://api.github.com/users/DaRealBada/subscriptions",
+                    "organizations_url": "https://api.github.com/users/DaRealBada/orgs",
+                    "repos_url": "https://api.github.com/users/DaRealBada/repos",
+                    "events_url": "https://api.github.com/users/DaRealBada/events{/privacy}",
+                    "received_events_url": "https://api.github.com/users/DaRealBada/received_events",
+                    "type": "User",
+                    "user_view_type": "public",
+                    "site_admin": false
+                  },
+                  "html_url": "https://github.com/DaRealBada/Web-Prog-CW",
+                  "description": "Wedding Service Company Website",
+                  "fork": false,
+                  "url": "https://api.github.com/repos/DaRealBada/Web-Prog-CW",
+                  "forks_url": "https://api.github.com/repos/DaRealBada/Web-Prog-CW/forks",
+                  "keys_url": "https://api.github.com/repos/DaRealBada/Web-Prog-CW/keys{/key_id}",
+                  "collaborators_url": "https://api.github.com/repos/DaRealBada/Web-Prog-CW/collaborators{/collaborator}",
+                  "teams_url": "https://api.github.com/repos/DaRealBada/Web-Prog-CW/teams",
+                  "hooks_url": "https://api.github.com/repos/DaRealBada/Web-Prog-CW/hooks",
+                  "issue_events_url": "https://api.github.com/repos/DaRealBada/Web-Prog-CW/issues/events{/number}",
+                  "events_url": "https://api.github.com/repos/DaRealBada/Web-Prog-CW/events",
+                  "assignees_url": "https://api.github.com/repos/DaRealBada/Web-Prog-CW/assignees{/user}",
+                  "branches_url": "https://api.github.com/repos/DaRealBada/Web-Prog-CW/branches{/branch}",
+                  "tags_url": "https://api.github.com/repos/DaRealBada/Web-Prog-CW/tags",
+                  "blobs_url": "https://api.github.com/repos/DaRealBada/Web-Prog-CW/git/blobs{/sha}",
+                  "git_tags_url": "https://api.github.com/repos/DaRealBada/Web-Prog-CW/git/tags{/sha}",
+                  "git_refs_url": "https://api.github.com/repos/DaRealBada/Web-Prog-CW/git/refs{/sha}",
+                  "trees_url": "https://api.github.com/repos/DaRealBada/Web-Prog-CW/git/trees{/sha}",
+                  "statuses_url": "https://api.github.com/repos/DaRealBada/Web-Prog-CW/statuses/{sha}",
+                  "languages_url": "https://api.github.com/repos/DaRealBada/Web-Prog-CW/languages",
+                  "stargazers_url": "https://api.github.com/repos/DaRealBada/Web-Prog-CW/stargazers",
+                  "contributors_url": "https://api.github.com/repos/DaRealBada/Web-Prog-CW/contributors",
+                  "subscribers_url": "https://api.github.com/repos/DaRealBada/Web-Prog-CW/subscribers",
+                  "subscription_url": "https://api.github.com/repos/DaRealBada/Web-Prog-CW/subscription",
+                  "commits_url": "https://api.github.com/repos/DaRealBada/Web-Prog-CW/commits{/sha}",
+                  "git_commits_url": "https://api.github.com/repos/DaRealBada/Web-Prog-CW/git/commits{/sha}",
+                  "comments_url": "https://api.github.com/repos/DaRealBada/Web-Prog-CW/comments{/number}",
+                  "issue_comment_url": "https://api.github.com/repos/DaRealBada/Web-Prog-CW/issues/comments{/number}",
+                  "contents_url": "https://api.github.com/repos/DaRealBada/Web-Prog-CW/contents/{+path}",
+                  "compare_url": "https://api.github.com/repos/DaRealBada/Web-Prog-CW/compare/{base}...{head}",
+                  "merges_url": "https://api.github.com/repos/DaRealBada/Web-Prog-CW/merges",
+                  "archive_url": "https://api.github.com/repos/DaRealBada/Web-Prog-CW/{archive_format}{/ref}",
+                  "downloads_url": "https://api.github.com/repos/DaRealBada/Web-Prog-CW/downloads",
+                  "issues_url": "https://api.github.com/repos/DaRealBada/Web-Prog-CW/issues{/number}",
+                  "pulls_url": "https://api.github.com/repos/DaRealBada/Web-Prog-CW/pulls{/number}",
+                  "milestones_url": "https://api.github.com/repos/DaRealBada/Web-Prog-CW/milestones{/number}",
+                  "notifications_url": "https://api.github.com/repos/DaRealBada/Web-Prog-CW/notifications{?since,all,participating}",
+                  "labels_url": "https://api.github.com/repos/DaRealBada/Web-Prog-CW/labels{/name}",
+                  "releases_url": "https://api.github.com/repos/DaRealBada/Web-Prog-CW/releases{/id}",
+                  "deployments_url": "https://api.github.com/repos/DaRealBada/Web-Prog-CW/deployments",
+                  "created_at": "2024-05-19T22:19:29Z",
+                  "updated_at": "2025-08-13T18:11:32Z",
+                  "pushed_at": "2025-08-13T18:13:21Z",
+                  "git_url": "git://github.com/DaRealBada/Web-Prog-CW.git",
+                  "ssh_url": "git@github.com:DaRealBada/Web-Prog-CW.git",
+                  "clone_url": "https://github.com/DaRealBada/Web-Prog-CW.git",
+                  "svn_url": "https://github.com/DaRealBada/Web-Prog-CW",
+                  "homepage": null,
+                  "size": 16181,
+                  "stargazers_count": 0,
+                  "watchers_count": 0,
+                  "language": "HTML",
+                  "has_issues": true,
+                  "has_projects": true,
+                  "has_downloads": true,
+                  "has_wiki": true,
+                  "has_pages": false,
+                  "has_discussions": false,
+                  "forks_count": 0,
+                  "mirror_url": null,
+                  "archived": false,
+                  "disabled": false,
+                  "open_issues_count": 0,
+                  "license": null,
+                  "allow_forking": true,
+                  "is_template": false,
+                  "web_commit_signoff_required": false,
+                  "topics": [],
+                  "visibility": "public",
+                  "forks": 0,
+                  "open_issues": 0,
+                  "watchers": 0,
+                  "default_branch": "main",
+                  "allow_squash_merge": true,
+                  "allow_merge_commit": true,
+                  "allow_rebase_merge": true,
+                  "allow_auto_merge": false,
+                  "delete_branch_on_merge": false,
+                  "allow_update_branch": false,
+                  "use_squash_pr_title_as_default": false,
+                  "squash_merge_commit_message": "COMMIT_MESSAGES",
+                  "squash_merge_commit_title": "COMMIT_OR_PR_TITLE",
+                  "merge_commit_message": "PR_TITLE",
+                  "merge_commit_title": "MERGE_MESSAGE"
+                }
+              },
+              "_links": {
+                "self": {
+                  "href": "https://api.github.com/repos/DaRealBada/Web-Prog-CW/pulls/13"
+                },
+                "html": {
+                  "href": "https://github.com/DaRealBada/Web-Prog-CW/pull/13"
+                },
+                "issue": {
+                  "href": "https://api.github.com/repos/DaRealBada/Web-Prog-CW/issues/13"
+                },
+                "comments": {
+                  "href": "https://api.github.com/repos/DaRealBada/Web-Prog-CW/issues/13/comments"
+                },
+                "review_comments": {
+                  "href": "https://api.github.com/repos/DaRealBada/Web-Prog-CW/pulls/13/comments"
+                },
+                "review_comment": {
+                  "href": "https://api.github.com/repos/DaRealBada/Web-Prog-CW/pulls/comments{/number}"
+                },
+                "commits": {
+                  "href": "https://api.github.com/repos/DaRealBada/Web-Prog-CW/pulls/13/commits"
+                },
+                "statuses": {
+                  "href": "https://api.github.com/repos/DaRealBada/Web-Prog-CW/statuses/ad51c2d535f5acb597737b02d71e1b57323e06e4"
+                }
+              },
+              "author_association": "OWNER",
+              "auto_merge": null,
+              "active_lock_reason": null,
+              "merged": true,
+              "mergeable": null,
+              "rebaseable": null,
+              "mergeable_state": "unknown",
+              "merged_by": {
+                "login": "DaRealBada",
+                "id": 142679079,
+                "node_id": "U_kgDOCIEcJw",
+                "avatar_url": "https://avatars.githubusercontent.com/u/142679079?v=4",
+                "gravatar_id": "",
+                "url": "https://api.github.com/users/DaRealBada",
+                "html_url": "https://github.com/DaRealBada",
+                "followers_url": "https://api.github.com/users/DaRealBada/followers",
+                "following_url": "https://api.github.com/users/DaRealBada/following{/other_user}",
+                "gists_url": "https://api.github.com/users/DaRealBada/gists{/gist_id}",
+                "starred_url": "https://api.github.com/users/DaRealBada/starred{/owner}{/repo}",
+                "subscriptions_url": "https://api.github.com/users/DaRealBada/subscriptions",
+                "organizations_url": "https://api.github.com/users/DaRealBada/orgs",
+                "repos_url": "https://api.github.com/users/DaRealBada/repos",
+                "events_url": "https://api.github.com/users/DaRealBada/events{/privacy}",
+                "received_events_url": "https://api.github.com/users/DaRealBada/received_events",
+                "type": "User",
+                "user_view_type": "public",
+                "site_admin": false
+              },
+              "comments": 0,
+              "review_comments": 0,
+              "maintainer_can_modify": false,
+              "commits": 1,
+              "additions": 3,
+              "deletions": 2,
+              "changed_files": 1
+            },
+            "repository": {
+              "id": 803022421,
+              "node_id": "R_kgDOL90mVQ",
+              "name": "Web-Prog-CW",
+              "full_name": "DaRealBada/Web-Prog-CW",
+              "private": false,
+              "owner": {
+                "login": "DaRealBada",
+                "id": 142679079,
+                "node_id": "U_kgDOCIEcJw",
+                "avatar_url": "https://avatars.githubusercontent.com/u/142679079?v=4",
+                "gravatar_id": "",
+                "url": "https://api.github.com/users/DaRealBada",
+                "html_url": "https://github.com/DaRealBada",
+                "followers_url": "https://api.github.com/users/DaRealBada/followers",
+                "following_url": "https://api.github.com/users/DaRealBada/following{/other_user}",
+                "gists_url": "https://api.github.com/users/DaRealBada/gists{/gist_id}",
+                "starred_url": "https://api.github.com/users/DaRealBada/starred{/owner}{/repo}",
+                "subscriptions_url": "https://api.github.com/users/DaRealBada/subscriptions",
+                "organizations_url": "https://api.github.com/users/DaRealBada/orgs",
+                "repos_url": "https://api.github.com/users/DaRealBada/repos",
+                "events_url": "https://api.github.com/users/DaRealBada/events{/privacy}",
+                "received_events_url": "https://api.github.com/users/DaRealBada/received_events",
+                "type": "User",
+                "user_view_type": "public",
+                "site_admin": false
+              },
+              "html_url": "https://github.com/DaRealBada/Web-Prog-CW",
+              "description": "Wedding Service Company Website",
+              "fork": false,
+              "url": "https://api.github.com/repos/DaRealBada/Web-Prog-CW",
+              "forks_url": "https://api.github.com/repos/DaRealBada/Web-Prog-CW/forks",
+              "keys_url": "https://api.github.com/repos/DaRealBada/Web-Prog-CW/keys{/key_id}",
+              "collaborators_url": "https://api.github.com/repos/DaRealBada/Web-Prog-CW/collaborators{/collaborator}",
+              "teams_url": "https://api.github.com/repos/DaRealBada/Web-Prog-CW/teams",
+              "hooks_url": "https://api.github.com/repos/DaRealBada/Web-Prog-CW/hooks",
+              "issue_events_url": "https://api.github.com/repos/DaRealBada/Web-Prog-CW/issues/events{/number}",
+              "events_url": "https://api.github.com/repos/DaRealBada/Web-Prog-CW/events",
+              "assignees_url": "https://api.github.com/repos/DaRealBada/Web-Prog-CW/assignees{/user}",
+              "branches_url": "https://api.github.com/repos/DaRealBada/Web-Prog-CW/branches{/branch}",
+              "tags_url": "https://api.github.com/repos/DaRealBada/Web-Prog-CW/tags",
+              "blobs_url": "https://api.github.com/repos/DaRealBada/Web-Prog-CW/git/blobs{/sha}",
+              "git_tags_url": "https://api.github.com/repos/DaRealBada/Web-Prog-CW/git/tags{/sha}",
+              "git_refs_url": "https://api.github.com/repos/DaRealBada/Web-Prog-CW/git/refs{/sha}",
+              "trees_url": "https://api.github.com/repos/DaRealBada/Web-Prog-CW/git/trees{/sha}",
+              "statuses_url": "https://api.github.com/repos/DaRealBada/Web-Prog-CW/statuses/{sha}",
+              "languages_url": "https://api.github.com/repos/DaRealBada/Web-Prog-CW/languages",
+              "stargazers_url": "https://api.github.com/repos/DaRealBada/Web-Prog-CW/stargazers",
+              "contributors_url": "https://api.github.com/repos/DaRealBada/Web-Prog-CW/contributors",
+              "subscribers_url": "https://api.github.com/repos/DaRealBada/Web-Prog-CW/subscribers",
+              "subscription_url": "https://api.github.com/repos/DaRealBada/Web-Prog-CW/subscription",
+              "commits_url": "https://api.github.com/repos/DaRealBada/Web-Prog-CW/commits{/sha}",
+              "git_commits_url": "https://api.github.com/repos/DaRealBada/Web-Prog-CW/git/commits{/sha}",
+              "comments_url": "https://api.github.com/repos/DaRealBada/Web-Prog-CW/comments{/number}",
+              "issue_comment_url": "https://api.github.com/repos/DaRealBada/Web-Prog-CW/issues/comments{/number}",
+              "contents_url": "https://api.github.com/repos/DaRealBada/Web-Prog-CW/contents/{+path}",
+              "compare_url": "https://api.github.com/repos/DaRealBada/Web-Prog-CW/compare/{base}...{head}",
+              "merges_url": "https://api.github.com/repos/DaRealBada/Web-Prog-CW/merges",
+              "archive_url": "https://api.github.com/repos/DaRealBada/Web-Prog-CW/{archive_format}{/ref}",
+              "downloads_url": "https://api.github.com/repos/DaRealBada/Web-Prog-CW/downloads",
+              "issues_url": "https://api.github.com/repos/DaRealBada/Web-Prog-CW/issues{/number}",
+              "pulls_url": "https://api.github.com/repos/DaRealBada/Web-Prog-CW/pulls{/number}",
+              "milestones_url": "https://api.github.com/repos/DaRealBada/Web-Prog-CW/milestones{/number}",
+              "notifications_url": "https://api.github.com/repos/DaRealBada/Web-Prog-CW/notifications{?since,all,participating}",
+              "labels_url": "https://api.github.com/repos/DaRealBada/Web-Prog-CW/labels{/name}",
+              "releases_url": "https://api.github.com/repos/DaRealBada/Web-Prog-CW/releases{/id}",
+              "deployments_url": "https://api.github.com/repos/DaRealBada/Web-Prog-CW/deployments",
+              "created_at": "2024-05-19T22:19:29Z",
+              "updated_at": "2025-08-13T18:11:32Z",
+              "pushed_at": "2025-08-13T18:13:21Z",
+              "git_url": "git://github.com/DaRealBada/Web-Prog-CW.git",
+              "ssh_url": "git@github.com:DaRealBada/Web-Prog-CW.git",
+              "clone_url": "https://github.com/DaRealBada/Web-Prog-CW.git",
+              "svn_url": "https://github.com/DaRealBada/Web-Prog-CW",
+              "homepage": null,
+              "size": 16181,
+              "stargazers_count": 0,
+              "watchers_count": 0,
+              "language": "HTML",
+              "has_issues": true,
+              "has_projects": true,
+              "has_downloads": true,
+              "has_wiki": true,
+              "has_pages": false,
+              "has_discussions": false,
+              "forks_count": 0,
+              "mirror_url": null,
+              "archived": false,
+              "disabled": false,
+              "open_issues_count": 0,
+              "license": null,
+              "allow_forking": true,
+              "is_template": false,
+              "web_commit_signoff_required": false,
+              "topics": [],
+              "visibility": "public",
+              "forks": 0,
+              "open_issues": 0,
+              "watchers": 0,
+              "default_branch": "main"
+            },
+            "sender": {
+              "login": "DaRealBada",
+              "id": 142679079,
+              "node_id": "U_kgDOCIEcJw",
+              "avatar_url": "https://avatars.githubusercontent.com/u/142679079?v=4",
+              "gravatar_id": "",
+              "url": "https://api.github.com/users/DaRealBada",
+              "html_url": "https://github.com/DaRealBada",
+              "followers_url": "https://api.github.com/users/DaRealBada/followers",
+              "following_url": "https://api.github.com/users/DaRealBada/following{/other_user}",
+              "gists_url": "https://api.github.com/users/DaRealBada/gists{/gist_id}",
+              "starred_url": "https://api.github.com/users/DaRealBada/starred{/owner}{/repo}",
+              "subscriptions_url": "https://api.github.com/users/DaRealBada/subscriptions",
+              "organizations_url": "https://api.github.com/users/DaRealBada/orgs",
+              "repos_url": "https://api.github.com/users/DaRealBada/repos",
+              "events_url": "https://api.github.com/users/DaRealBada/events{/privacy}",
+              "received_events_url": "https://api.github.com/users/DaRealBada/received_events",
+              "type": "User",
+              "user_view_type": "public",
+              "site_admin": false
+            }
+          },
+          "headers": {
+            "host": "badatolu.app.n8n.cloud",
+            "user-agent": "GitHub-Hookshot/a214eb0",
+            "content-length": "23476",
+            "accept": "*/*",
+            "accept-encoding": "gzip, br",
+            "cdn-loop": "cloudflare; loops=1; subreqs=1",
+            "cf-connecting-ip": "140.82.115.76",
+            "cf-ew-via": "15",
+            "cf-ipcountry": "US",
+            "cf-ray": "96f3f86c11d4289e-IAD",
+            "cf-visitor": "{\"scheme\":\"https\"}",
+            "cf-worker": "n8n.cloud",
+            "content-type": "application/json",
+            "x-forwarded-for": "140.82.115.76, 172.70.42.81",
+            "x-forwarded-host": "badatolu.app.n8n.cloud",
+            "x-forwarded-port": "443",
+            "x-forwarded-proto": "https",
+            "x-forwarded-server": "traefik-prod-users-gwc-46-d85945c6c-2gv7b",
+            "x-github-delivery": "1267f6f0-7960-11f0-8ed8-772c9990a611",
+            "x-github-event": "pull_request",
+            "x-github-hook-id": "563945055",
+            "x-github-hook-installation-target-id": "803022421",
+            "x-github-hook-installation-target-type": "repository",
+            "x-is-trusted": "yes",
+            "x-real-ip": "140.82.115.76"
+          },
+          "query": {}
+        }
+      }
+    ]
+  },
+  "connections": {
+    "Github Trigger1": {
+      "main": [
+        [
+          {
+            "node": "Get a repository1",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "HTTP Request",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get a repository1": {
+      "main": [
+        [
+          {
+            "node": "Code",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTTP Request3": {
+      "main": [
+        [
+          {
+            "node": "Merge",
+            "type": "main",
+            "index": 1
+          }
+        ]
+      ]
+    },
+    "Code": {
+      "main": [
+        [
+          {
+            "node": "Edit Fields1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Edit Fields1": {
+      "main": [
+        [
+          {
+            "node": "HTTP Request3",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI Agent2": {
+      "main": [
+        [
+          {
+            "node": "HTTP Request4",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTTP Request4": {
+      "main": [
+        [
+          {
+            "node": "Split Out4",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Gemini Chat Model2": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent2",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Split Out4": {
+      "main": [
+        [
+          {
+            "node": "Split Out5",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Split Out5": {
+      "main": [
+        [
+          {
+            "node": "Append row in sheet2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTTP Request": {
+      "main": [
+        [
+          {
+            "node": "Merge",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Merge": {
+      "main": [
+        [
+          {
+            "node": "AI Agent2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "c77f74a6-8568-4dad-8540-178fed46aa40",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "c20f89409c98fe313b378c66c07702af221a53a63db84df56df0aee6d7988b21"
+  },
+  "id": "cZpGtmG8UquVr84j",
+  "tags": []
+}
